@@ -8,38 +8,53 @@ datasource db {
 }
 
 model User {
-  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  telegramId       String?            @unique @map("telegram_id")
-  tonAddress       String?            @unique @map("ton_address")
-  evmAddress       String?            @unique @map("evm_address")
-  gold             Int                @default(0)
-  gem              Int                @default(0)
-  finishOnboarding Boolean            @default(false) @map("finish_onboarding")
-  createdBy        String?            @map("created_by")
-  updatedBy        String?            @map("updated_by")
-  createdAt        DateTime           @default(now()) @map("created_at")
-  updatedAt        DateTime           @updatedAt @map("updated_at")
-  deletedAt        DateTime?          @map("deleted_at")
-  CompletedMission CompletedMission[]
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  telegramId       String?   @unique @map("telegram_id")
+  tonAddress       String?   @unique @map("ton_address")
+  evmAddress       String?   @unique @map("evm_address")
+  gold             Int       @default(0)
+  gem              Int       @default(0)
+  finishOnboarding Boolean   @default(false) @map("finish_onboarding")
+  createdBy        String?   @map("created_by")
+  updatedBy        String?   @map("updated_by")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
+
+  completedMission CompletedMission[]
+  refreshToken     RefreshToken[]
 
   @@map("users")
 }
 
+model RefreshToken {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  token     String   @unique
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now())
+  expiredAt DateTime
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("refresh_tokens")
+}
+
 model Mission {
-  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  type             MissionType        @default(ONE_TIME) @map("type")
-  socialTask       SocialTask         @default(NORMAL) @map("social_task")
-  title            String             @map("title")
-  image            String?            @map("image")
-  gold             Int                @map("gold")
-  cooldown         Int                @map("cooldown")
-  createdBy        String             @default("system") @map("created_by")
-  updatedBy        String             @default("system") @map("updated_by")
-  createdAt        DateTime           @default(now()) @map("created_at")
-  updatedAt        DateTime           @updatedAt @map("updated_at")
-  deletedAt        DateTime?          @map("deleted_at")
-  url              String?            @map("url")
-  CompletedMission CompletedMission[]
+  id         String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type       MissionType @default(ONE_TIME) @map("type")
+  socialTask SocialTask  @default(NORMAL) @map("social_task")
+  title      String      @map("title")
+  image      String?     @map("image")
+  gold       Int         @map("gold")
+  cooldown   Int         @map("cooldown")
+  createdBy  String      @default("system") @map("created_by")
+  updatedBy  String      @default("system") @map("updated_by")
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+  deletedAt  DateTime?   @map("deleted_at")
+  url        String?     @map("url")
+
+  completedMission CompletedMission[]
 
   @@map("missions")
 }
@@ -54,8 +69,9 @@ model CompletedMission {
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
-  mission   Mission   @relation(fields: [missionId], references: [id])
-  user      User      @relation(fields: [userId], references: [id])
+
+  mission Mission @relation(fields: [missionId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
 
   @@map("completed_missions")
 }

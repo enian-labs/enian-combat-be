@@ -7,6 +7,7 @@ import { JwtPayload } from '@/types/jwt';
 import { verifyTelegramWebAppData } from '@/commons/telegram.common';
 import { decodeParams } from '@/commons/general.common';
 import { ITelegramInitData } from '@/types/telegram';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthService {
@@ -21,21 +22,46 @@ export class AuthService {
   }
 
   async generateRefreshToken(userId: string) {
-    const payload: JwtPayload = { sub: userId };
-    return this.jwtService.sign(payload, { expiresIn: '7d' }); // long-lived refresh token
+    const token = uuidv4(); // Generate a new token
+    const expiredAt = new Date();
+    expiredAt.setDate(expiredAt.getDate() + 7); // Set expiration date for 7 days
+
+    // Store the refresh token in the database
+    await this.prisma.refreshToken.create({
+      data: {
+        token,
+        userId,
+        expiredAt,
+      },
+    });
+
+    return token;
   }
 
   async refreshAccessToken(refreshToken: string) {
-    try {
-      const payload = this.jwtService.verify(refreshToken);
-      const user = await this.prisma.user.findUnique({
-        where: { id: payload.sub },
-      });
-      if (!user) throw new Error();
-      return this.generateAccessToken(user.id); // Issue new access token
-    } catch (e) {
-      throw new Error('Invalid refresh token');
+    const storedToken = await this.prisma.refreshToken.findUnique({
+      where: { token: refreshToken },
+      include: { user: true },
+    });
+
+    if (!storedToken || storedToken.expiredAt < new Date()) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
     }
+
+    await this.prisma.refreshToken.update({
+      where: { id: storedToken.id },
+      data: {
+        expiredAt: new Date(),
+      },
+    });
+
+    const accessToken = await this.generateAccessToken(storedToken.user.id);
+
+    const newRefreshToken = await this.generateRefreshToken(
+      storedToken.user.id,
+    );
+
+    return { accessToken, refreshToken: newRefreshToken };
   }
 
   async login(body: LoginDto): Promise<User> {
@@ -45,30 +71,42 @@ export class AuthService {
 
     const initData = decodeParams<ITelegramInitData>(body.initData);
 
-    let user = await this.prisma.user.findUnique({
+    const user = await this.prisma.user.upsert({
       where: { telegramId: initData.user.id.toString() },
+      update: {},
+      create: {
+        telegramId: initData.user.id.toString(),
+        createdBy: 'Login Endpoint',
+        updatedBy: 'Login Endpoint',
+      },
     });
 
-    if (!user) {
-      const newUser = await this.prisma.user.create({
-        data: {
-          telegramId: initData.user.id.toString(),
-          createdBy: 'Login Endpoint',
-          updatedBy: 'Login Endpoint',
-        },
-      });
-      user = newUser;
-    }
-
-    return user!;
+    return user;
   }
 
+  // Verify refresh token (optional, in case you need to check manually)
   async verifyRefreshToken(refreshToken: string) {
     try {
-      const payload = this.jwtService.verify(refreshToken);
-      return payload;
+      const storedToken = await this.prisma.refreshToken.findUnique({
+        where: { token: refreshToken },
+      });
+
+      if (!storedToken) {
+        throw new UnauthorizedException('Refresh token not found');
+      }
+
+      return storedToken;
     } catch (e) {
-      return null;
+      throw new UnauthorizedException('Invalid refresh token');
     }
+  }
+
+  async revokeRefreshToken(refreshToken: string) {
+    await this.prisma.refreshToken.update({
+      where: { token: refreshToken },
+      data: {
+        expiredAt: new Date(),
+      },
+    });
   }
 }

@@ -56,11 +56,8 @@ export class AuthController {
       throw new UnauthorizedException('Refresh token missing');
     }
 
-    const newAccessToken =
+    const { accessToken, refreshToken: newRefreshToken } =
       await this.authService.refreshAccessToken(refreshToken);
-    const newRefreshToken = await this.authService.generateRefreshToken(
-      (await this.authService.verifyRefreshToken(refreshToken)).sub,
-    );
 
     // Set the new refresh token as HttpOnly cookie
     res.cookie('refresh_token', newRefreshToken, {
@@ -70,7 +67,7 @@ export class AuthController {
       maxAge: 60 * 60 * 24 * 7 * 1000, // 7 days
     });
 
-    return res.json({ accessToken: newAccessToken });
+    return res.json({ accessToken });
   }
 
   // Logout Endpoint
@@ -80,7 +77,11 @@ export class AuthController {
     description: 'Logged out successfully',
   })
   @ResponseMessage('Logged out successfully')
-  logout(@Res() res: Response) {
+  async logout(@Req() req: Request, @Res() res: Response) {
+    const refreshToken = req.cookies['refresh_token'];
+
+    await this.authService.revokeRefreshToken(refreshToken);
+
     // Clear the refresh token cookie
     res.clearCookie('refresh_token');
     return res.json({ message: 'Logged out successfully' });
