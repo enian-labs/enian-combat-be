@@ -6,6 +6,7 @@ import {
   UseGuards,
   ParseEnumPipe,
   Param,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -20,11 +21,13 @@ import { UpdateWalletDto } from './dto/update-wallet.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { GetUser } from '@/decorators/get-user/get-user.decorator';
 import { JwtAuthGuard } from '@/guards/auth.guard';
+import { TransformInterceptor } from '@/interceptors/transform/transform.interceptor';
 
 @ApiTags('User')
 @Controller('user')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
+@UseInterceptors(TransformInterceptor)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

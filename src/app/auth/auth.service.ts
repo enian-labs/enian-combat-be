@@ -8,6 +8,7 @@ import { verifyTelegramWebAppData } from '@/commons/telegram.common';
 import { decodeParams } from '@/commons/general.common';
 import { ITelegramInitData } from '@/types/telegram';
 import { v4 as uuidv4 } from 'uuid';
+import { jwtConstants } from '@/constants/jwt.constants';
 
 @Injectable()
 export class AuthService {
@@ -18,7 +19,10 @@ export class AuthService {
 
   async generateAccessToken(userId: string) {
     const payload: JwtPayload = { sub: userId };
-    return this.jwtService.sign(payload, { expiresIn: '15m' }); // short-lived access token
+    return this.jwtService.sign(payload, {
+      expiresIn: jwtConstants.accessTokenExpiration || '5m',
+      secret: jwtConstants.secret,
+    }); // short-lived access token
   }
 
   async generateRefreshToken(userId: string) {

@@ -16,8 +16,8 @@ export class UserService {
 
   constructor(private prisma: PrismaService) {}
 
-  async findByTelegramId(telegramId: string): Promise<User | null> {
-    return this.prisma.user.findUnique({ where: { telegramId } });
+  async findByUserId(id: string): Promise<User | null> {
+    return this.prisma.user.findUnique({ where: { id } });
   }
 
   async getUserProfile(userId: string): Promise<UserResponseDto> {
@@ -82,7 +82,7 @@ export class UserService {
   }
 
   async getUserById(id: string): Promise<User> {
-    const user = await this.prisma.user.findUnique({ where: { id } });
+    const user = await this.findByUserId(id);
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
@@ -96,6 +96,7 @@ export class UserService {
       tonAddress: user.tonAddress,
       evmAddress: user.evmAddress,
       gold: user.gold,
+      finishOnboarding: user.finishOnboarding,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       deletedAt: user.deletedAt,
