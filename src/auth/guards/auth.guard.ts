@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../../app/user/user.service';
 import { checkTokenExpiry, extractTokenFromHeader } from '../utils/token.utils';
 import { Logger } from '@nestjs/common';
+import { PrismaService } from '@/shared/prisma/prisma.service';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -16,11 +17,36 @@ export class JwtAuthGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private userService: UserService,
+    private prisma: PrismaService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = extractTokenFromHeader(request.headers);
+
+    // Force User
+    if (process.env.FORCE_GUARD_USER) {
+      const testUser = {
+        id: '3136aa1a-fec8-11de-a55f-00003925d394',
+        telegramId: 'test-telegram-id',
+        tonAddress: 'test-ton-wallet',
+        evmAddress: 'test-evm-address',
+        gold: 100,
+        createdBy: 'Seeder',
+        updatedBy: 'Seeder',
+      };
+
+      let user = await this.prisma.user.findUnique({
+        where: { id: testUser.id },
+      });
+
+      if (!user) {
+        user = await this.prisma.user.create({ data: testUser });
+      }
+
+      request['user'] = user;
+      return true;
+    }
 
     if (!token) {
       throw new UnauthorizedException('No token provided');
