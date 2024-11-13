@@ -5,11 +5,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UserService } from '../../app/user/user.service';
-import { checkTokenExpiry, extractTokenFromHeader } from '../utils/token.utils';
 import { Logger } from '@nestjs/common';
 import { PrismaService } from '@/shared/prisma/prisma.service';
 import { featureFlag } from '@/commons/general.common';
+import { UserService } from '@/app/user/user.service';
+import { extractTokenFromHeader, checkTokenExpiry } from '@/commons/auth.common';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {

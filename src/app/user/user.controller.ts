@@ -15,11 +15,11 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
-import { JwtAuthGuard } from '@/auth/guards/auth.guard';
-import { GetUser } from '@/auth/decorators/get-user.decorator';
 import { User } from '@prisma/client';
 import { UpdateWalletDto } from './dto/update-wallet.dto';
 import { UserResponseDto } from './dto/user-response.dto';
+import { GetUser } from '@/decorators/get-user/get-user.decorator';
+import { JwtAuthGuard } from '@/guards/auth.guard';
 
 @ApiTags('User')
 @Controller('user')

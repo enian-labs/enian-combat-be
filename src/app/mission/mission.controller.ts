@@ -7,11 +7,11 @@ import {
 } from '@nestjs/swagger';
 import { MissionService } from './mission.service';
 import { ListMissionQueryDto } from './dto/list-mission-query.dto';
-import { JwtAuthGuard } from '@/auth/guards/auth.guard';
-import { GetUser } from '@/auth/decorators/get-user.decorator';
 import { User } from '@prisma/client';
 import { PaginatedMissionResponseDto } from './dto/paginated-mission-response.dto';
 import { CompleteMissionBodyDto } from './dto/complete-mission-query.dto';
+import { JwtAuthGuard } from '@/guards/auth.guard';
+import { GetUser } from '@/decorators/get-user/get-user.decorator';
 
 @ApiTags('Mission')
 @Controller('missions')

@@ -6,9 +6,9 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { GetUser } from '@/auth/decorators/get-user.decorator';
 import { User } from '@prisma/client';
-import { JwtAuthGuard } from '@/auth/guards/auth.guard';
+import { GetUser } from '@/decorators/get-user/get-user.decorator';
+import { JwtAuthGuard } from '@/guards/auth.guard';
 
 @ApiTags('Onboarding')
 @Controller('onboarding')
