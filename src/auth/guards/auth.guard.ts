@@ -9,6 +9,7 @@ import { UserService } from '../../app/user/user.service';
 import { checkTokenExpiry, extractTokenFromHeader } from '../utils/token.utils';
 import { Logger } from '@nestjs/common';
 import { PrismaService } from '@/shared/prisma/prisma.service';
+import { featureFlag } from '@/commons/general.common';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -25,7 +26,7 @@ export class JwtAuthGuard implements CanActivate {
     const token = extractTokenFromHeader(request.headers);
 
     // Force User
-    if (process.env.FORCE_GUARD_USER) {
+    if (featureFlag('FORCE_GUARD_USER')) {
       const testUser = {
         id: '3136aa1a-fec8-11de-a55f-00003925d394',
         telegramId: 'test-telegram-id',
