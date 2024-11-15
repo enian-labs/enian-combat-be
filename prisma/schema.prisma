@@ -21,8 +21,10 @@ model User {
   updatedAt        DateTime  @updatedAt @map("updated_at")
   deletedAt        DateTime? @map("deleted_at")
 
-  completedMission CompletedMission[]
-  refreshToken     RefreshToken[]
+  completedMissions CompletedMission[]
+  refreshToken      RefreshToken[]
+  farmLogs          FarmLog[]
+  userSkills        UserSkill[]
 
   @@map("users")
 }
@@ -54,15 +56,15 @@ model Mission {
   deletedAt  DateTime?   @map("deleted_at")
   url        String?     @map("url")
 
-  completedMission CompletedMission[]
+  completedMissions CompletedMission[]
 
   @@map("missions")
 }
 
 model CompletedMission {
   id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    String    @db.Uuid
-  missionId String    @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  missionId String    @map("mission_id") @db.Uuid
   gold      Int
   createdBy String    @default("system") @map("created_by")
   updatedBy String    @default("system") @map("updated_by")
@@ -74,6 +76,122 @@ model CompletedMission {
   user    User    @relation(fields: [userId], references: [id])
 
   @@map("completed_missions")
+}
+
+model Skill {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type        SkillType @default(FARMING)
+  name        String
+  description String?
+  maxLevel    Int
+  metadata    Json
+  createdBy   String    @default("system") @map("created_by")
+  updatedBy   String    @default("system") @map("updated_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  userSkills UserSkill[]
+  farmLogs   FarmLog[]
+
+  @@map("skills")
+}
+
+model UserSkill {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  skillId   String    @map("skill_id") @db.Uuid
+  level     Int       @default(0)
+  exp       Int       @default(0)
+  createdBy String    @default("system") @map("created_by")
+  updatedBy String    @default("system") @map("updated_by")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  user  User  @relation(fields: [userId], references: [id])
+  skill Skill @relation(fields: [skillId], references: [id])
+
+  @@map("user_skills")
+}
+
+model Item {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type        ItemType  @default(RESOURCE)
+  name        String
+  description String?
+  metadata    Json
+  createdBy   String    @default("system") @map("created_by")
+  updatedBy   String    @default("system") @map("updated_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  @@map("items")
+}
+
+model UserItem {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  itemId    String    @map("item_id") @db.Uuid
+  qty       Int       @default(0)
+  createdBy String    @default("system") @map("created_by")
+  updatedBy String    @default("system") @map("updated_by")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("user_items")
+}
+
+model Farm {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type        FarmType  @default(MAIN_FARMING) @map("type")
+  userId      String    @map("user_id") @db.Uuid
+  skillId     String    @map("skill_id") @db.Uuid
+  name        String
+  description String?
+  createdBy   String    @default("system") @map("created_by")
+  updatedBy   String    @default("system") @map("updated_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  farmLogs FarmLog[]
+
+  @@map("farms")
+}
+
+model FarmLog {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type      FarmType  @default(MAIN_FARMING) @map("type")
+  farmId    String    @map("farm_id") @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  skillId   String    @map("skill_id") @db.Uuid
+  metadata  Json      @map("metadata")
+  createdBy String    @default("system") @map("created_by")
+  updatedBy String    @default("system") @map("updated_by")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  user  User  @relation(fields: [userId], references: [id])
+  farm  Farm  @relation(fields: [farmId], references: [id])
+  skill Skill @relation(fields: [skillId], references: [id])
+
+  @@map("farm_logs")
+}
+
+enum ItemType {
+  RESOURCE
+}
+
+enum FarmType {
+  MAIN_FARMING
+}
+
+enum SkillType {
+  FARMING
 }
 
 enum MissionType {
