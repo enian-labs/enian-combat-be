@@ -17,6 +17,9 @@ export class UserResponseDto {
   gold: number = 0;
 
   @ApiProperty()
+  finishOnboarding: boolean = false;
+
+  @ApiProperty()
   createdBy: string | null = null;
 
   @ApiProperty()

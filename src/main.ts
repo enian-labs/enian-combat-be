@@ -14,7 +14,13 @@ import { createWriteStream } from 'fs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+
+  app.enableCors({
+    origin: true,
+    credentials: true,
+    methods: '*',
+    allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With',
+  });
 
   const configService = app.select(SharedModule).get(ConfigService);
 

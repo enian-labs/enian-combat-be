@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards, UseInterceptors } from '@nestjs/common';
 import { OnboardingService } from './onboarding.service';
 import {
   ApiBearerAuth,
@@ -6,14 +6,16 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { GetUser } from '@/auth/decorators/get-user.decorator';
 import { User } from '@prisma/client';
-import { JwtAuthGuard } from '@/auth/guards/auth.guard';
+import { GetUser } from '@/decorators/get-user/get-user.decorator';
+import { JwtAuthGuard } from '@/guards/auth.guard';
+import { TransformInterceptor } from '@/interceptors/transform/transform.interceptor';
 
 @ApiTags('Onboarding')
 @Controller('onboarding')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
+@UseInterceptors(TransformInterceptor)
 export class OnboardingController {
   constructor(private readonly onboardingService: OnboardingService) {}
 

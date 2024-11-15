@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -7,16 +7,18 @@ import {
 } from '@nestjs/swagger';
 import { MissionService } from './mission.service';
 import { ListMissionQueryDto } from './dto/list-mission-query.dto';
-import { JwtAuthGuard } from '@/auth/guards/auth.guard';
-import { GetUser } from '@/auth/decorators/get-user.decorator';
 import { User } from '@prisma/client';
 import { PaginatedMissionResponseDto } from './dto/paginated-mission-response.dto';
 import { CompleteMissionBodyDto } from './dto/complete-mission-query.dto';
+import { JwtAuthGuard } from '@/guards/auth.guard';
+import { GetUser } from '@/decorators/get-user/get-user.decorator';
+import { TransformInterceptor } from '@/interceptors/transform/transform.interceptor';
 
 @ApiTags('Mission')
 @Controller('missions')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
+@UseInterceptors(TransformInterceptor)
 export class MissionController {
   constructor(private readonly missionService: MissionService) {}
 

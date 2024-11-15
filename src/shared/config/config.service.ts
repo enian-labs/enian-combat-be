@@ -40,4 +40,10 @@ export class ConfigService {
       url: this.get('APP_URL') || '',
     };
   }
+
+  get telegram() {
+    return {
+      botToken: this.get('TELEGRAM_BOT_TOKEN') || '',
+    };
+  }
 }

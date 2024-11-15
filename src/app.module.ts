@@ -8,9 +8,9 @@ import { join } from 'path';
 import { UserModule } from './app/user/user.module';
 import { MissionController } from './app/mission/mission.controller';
 import { MissionModule } from './app/mission/mission.module';
-import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { OnboardingModule } from './app/onboarding/onboarding.module';
+import { AuthModule } from './app/auth/auth.module';
 import { FarmModule } from './app/farm/farm.module';
 
 @Module({
@@ -34,10 +34,10 @@ import { FarmModule } from './app/farm/farm.module';
       global: true,
     }),
     SharedModule,
-    AuthModule,
     UserModule,
     MissionModule,
     OnboardingModule,
+    AuthModule,
     FarmModule,
   ],
   controllers: [AppController, MissionController],
