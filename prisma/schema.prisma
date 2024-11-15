@@ -21,6 +21,7 @@ model User {
   updatedAt        DateTime           @updatedAt @map("updated_at")
   deletedAt        DateTime?          @map("deleted_at")
   CompletedMission CompletedMission[]
+  FarmLog          FarmLog[]
 
   @@map("users")
 }
@@ -58,6 +59,91 @@ model CompletedMission {
   user      User      @relation(fields: [userId], references: [id])
 
   @@map("completed_missions")
+}
+
+model FarmConfig {
+  id                          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  expMultiplier               Decimal       @map("exp_multiplier")
+  minExpFastUpgradeMultiplier Decimal       @map("min_exp_fast_upgrade_multiplier")
+  fastUpgradePriceMultiplier  Decimal       @map("fast_upgrade_price_multiplier")
+  createdAt                   DateTime      @default(now()) @map("created_at")
+  updatedAt                   DateTime?     @updatedAt @map("updated_at")
+  deletedAt                   DateTime?     @map("deleted_at")
+  benefitMultiplier           FarmBenefit[]
+  level                       Level[]
+  farmLogs                    FarmLog[]
+
+  @@map("farm_configs")
+}
+
+model FarmBenefit {
+  id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  farmConfigId String?     @map("farm_config_id") @db.Uuid
+  FarmConfig   FarmConfig? @relation(fields: [farmConfigId], references: [id])
+  levelId      String?     @map("level_id") @db.Uuid
+  Level        Level?      @relation(fields: [levelId], references: [id])
+  farmType     FarmType    @default(MAIN_FARMING) @map("farm_type")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime?   @updatedAt @map("updated_at")
+  deletedAt    DateTime?   @map("deleted_at")
+  itemRewards  Item[]
+  farmLogs     FarmLog[]
+
+  @@map("farm_benefits")
+}
+
+model Level {
+  id                    String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  farmConfigId          String?       @map("farm_config_id") @db.Uuid
+  FarmConfig            FarmConfig?   @relation(fields: [farmConfigId], references: [id])
+  level                 Int
+  exp                   Int
+  minFastUpgradeExp     Int           @map("min_fast_upgrade_exp")
+  fastUpgradePrice      Int           @map("fast_upgrade_price")
+  nextLevelExp          Int           @map("next_level_exp")
+  nextMinFastUpgradeExp Int           @map("next_min_fast_upgrade_exp")
+  nextFastUpgradePrice  Int           @map("next_fast_upgrade_price")
+  createdAt             DateTime      @default(now()) @map("created_at")
+  updatedAt             DateTime?     @updatedAt @map("updated_at")
+  FarmBenefit           FarmBenefit[]
+
+  @@map("levels")
+}
+
+model Item {
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  farmBenefitId String?      @map("farm_benefit_id") @db.Uuid
+  FarmBenefit   FarmBenefit? @relation(fields: [farmBenefitId], references: [id])
+  name          String
+  multiplier    Decimal?
+  amount        Int?
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime?    @updatedAt @map("updated_at")
+  deletedAt     DateTime?    @map("deleted_at")
+  FarmLog       FarmLog[]
+
+  @@map("items")
+}
+
+model FarmLog {
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  User          User?        @relation(fields: [userId], references: [id])
+  userId        String?      @map("user_id") @db.Uuid
+  Item          Item?        @relation(fields: [itemId], references: [id])
+  itemId        String?      @map("item_id") @db.Uuid
+  FarmConfig    FarmConfig?  @relation(fields: [farmConfigId], references: [id])
+  farmConfigId  String?      @map("farm_config_id") @db.Uuid
+  FarmBenefit   FarmBenefit? @relation(fields: [farmBenefitId], references: [id])
+  farmBenefitId String?      @map("farm_benefit_id") @db.Uuid
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+  deletedAt     DateTime?    @map("deleted_at")
+
+  @@map("farm_logs")
+}
+
+enum FarmType {
+  MAIN_FARMING
 }
 
 enum MissionType {
