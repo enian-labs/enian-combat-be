@@ -58,6 +58,7 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 # Prisma
 /prisma/*.db
 /prisma/migrations/*_init/
+/prisma/migrations/
 
 # Misc
 *.tsbuildinfo
