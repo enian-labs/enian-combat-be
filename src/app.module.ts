@@ -11,6 +11,7 @@ import { MissionModule } from './app/mission/mission.module';
 import { JwtModule } from '@nestjs/jwt';
 import { OnboardingModule } from './app/onboarding/onboarding.module';
 import { AuthModule } from './app/auth/auth.module';
+import { FarmModule } from './app/farm/farm.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { AuthModule } from './app/auth/auth.module';
     MissionModule,
     OnboardingModule,
     AuthModule,
+    FarmModule,
   ],
   controllers: [AppController, MissionController],
   providers: [AppService],
